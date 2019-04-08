@@ -9,17 +9,17 @@ using namespace std;
 
 
 class TrainingData{
-	public: 
-		TrainingData (const string filename);
-		bool isEof(void) { return m_trainingDataFile.eof(); }
-		void getTopology(vector<unsigned> &topology);
+public: 
+	TrainingData (const string filename);
+	bool isEof(void) { return m_trainingDataFile.eof(); }
+	void getTopology(vector<unsigned> &topology);
 
-		// Return 
-		unsigned getNextInputs(vector<double> &inputVals);
-		unsigned getTargetOutputs(vector<double> &targetOutputVals);
+	// Return 
+	unsigned getNextInputs(vector<double> &inputVals);
+	unsigned getTargetOutputs(vector<double> &targetOutputVals);
 
-	private :
-		ifstream m_trainingDataFile;
+private :
+	ifstream m_trainingDataFile;
 };
 
 void TrainingData::getTopology(vector<unsigned> &topology){
@@ -30,7 +30,7 @@ void TrainingData::getTopology(vector<unsigned> &topology){
 	stringstream ss(line);
 	ss >> label;
 
-	if( this-> isEof() || label.compare("topology : ") != 0){
+	if( this-> isEof() || label.compare("topology:") != 0){
 		abort();
 	}
 
@@ -76,7 +76,7 @@ unsigned TrainingData::getTargetOutputs(vector<double> &targetOutputVals){
 	string label;
 	ss >> label;
 
-	if(label.compare("out: ") == 0){
+	if(label.compare("out:") == 0){
 		double oneValue;
 		while(ss >> oneValue){
 			targetOutputVals.push_back(oneValue);
@@ -96,29 +96,29 @@ typedef vector<Neuron> Layer;
 
 // Class Neuron =======================================
 class Neuron{
-	public: 
-		Neuron(unsigned numOutputs, unsigned myIndex);
-		void setOutputVal(double val ){ m_outputVal = val; }
-		double getOutputVal(void) const{ return m_outputVal; }
-		void feedForward(const Layer &prevLayer);
-		void calcOutputGradients(double targetVal);
-		void calcHiddenGradients(const Layer &nextLayer);
-		void updateInputWeights (Layer &prevLayer);
+public: 
+	Neuron(unsigned numOutputs, unsigned myIndex);
+	void setOutputVal(double val ){ m_outputVal = val; }
+	double getOutputVal(void) const{ return m_outputVal; }
+	void feedForward(const Layer &prevLayer);
+	void calcOutputGradients(double targetVal);
+	void calcHiddenGradients(const Layer &nextLayer);
+	void updateInputWeights (Layer &prevLayer);
 
-	private:
-		static double learningRate; //[0.0 .. 1.0] overall net training rate
-		static double momentum; //[0.0 .. n]	multiplier of last weight change 
-		static double transferFunction(double x);
-		static double transferFunctioDerivative(double x);
-	 	static double randomWeight(void){
-			return rand() / double(RAND_MAX);
-		}
+private:
+	static double learningRate; //[0.0 .. 1.0] overall net training rate
+	static double momentum; //[0.0 .. n]	multiplier of last weight change 
+	static double transferFunction(double x);
+	static double transferFunctioDerivative(double x);
+ 	static double randomWeight(void){
+		return rand() / double(RAND_MAX);
+	}
 
-		double sumDOW(const Layer &nextLayer) const;
-		double m_outputVal;
-		vector<Connection> m_outputWeights;
-		unsigned m_myIndex;
-		double m_gradient;
+	double sumDOW(const Layer &nextLayer) const;
+	double m_outputVal;
+	vector<Connection> m_outputWeights;
+	unsigned m_myIndex;
+	double m_gradient;
 };
 
 double Neuron::learningRate = 0.15;
@@ -194,18 +194,18 @@ Neuron::Neuron(unsigned numOutputs, unsigned myIndex){
 // Class Net =========================================
 
 class Net{
-	public :
-		Net(const vector<unsigned> &topology);
-		void feedForward(const vector<double> &inputVals);
-		void backProp(const vector<double> &targetVals);
-		void getResults(vector<double> &resultVals) const;
-		double getRecentAverageError(void) const { return m_recentAverageError; }
+public :
+	Net(const vector<unsigned> &topology);
+	void feedForward(const vector<double> &inputVals);
+	void backProp(const vector<double> &targetVals);
+	void getResults(vector<double> &resultVals) const;
+	double getRecentAverageError(void) const { return m_recentAverageError; }
 
-	private:
-		vector<Layer> m_layers; //m_layers[layerNum][neuronNum]
-		double m_error;
-		double m_recentAverageError;
-		double m_recentAverageSmoothingFactor;
+private:
+	vector<Layer> m_layers; //m_layers[layerNum][neuronNum]
+	double m_error;
+	double m_recentAverageError;
+	double m_recentAverageSmoothingFactor;
 };
 
 void Net::getResults(vector<double> &resultVals) const{
@@ -309,11 +309,12 @@ void showVectorVals( string label, vector<double> &v){
 }
 		
 int main(){
-	TrainingData trainData("/tmp/trainingData.txt");
+	TrainingData trainData("F:/KULIAH/Semester 8/Skripsi/Neuralnettutorial/tmp/trainingData.txt");
 
 	// misal {3,2,3}
 	vector <unsigned> topology;	
 	trainData.getTopology(topology);
+
 	Net myNet(topology);
 	
 	vector <double> inputVals, targetVals, resultVals;
@@ -327,22 +328,23 @@ int main(){
 		if(trainData.getNextInputs(inputVals) != topology[0]){
 			break;
 		}
-		showVectorVals(": Inputs : ", inputVals);
+		showVectorVals(": Inputs:", inputVals);
 		myNet.feedForward(inputVals);
 
 		//collect the net's actual results:
 		myNet.getResults(resultVals);
-		showVectorVals(" Output : ", resultVals);
+		showVectorVals("Outputs:", resultVals);
 
 		//Train the net what the output should have been:
 		trainData.getTargetOutputs(targetVals);
-		showVectorVals ("Targets : ", targetVals);
-		assert(targetVals.size() == topology.back());
+		cout<< targetVals[0]<<endl;
+		//showVectorVals("Targets:", targetVals);
+		//assert(targetVals.size() == topology.back());
 
 		myNet.backProp(targetVals);
 
 		//Report how well the training is working
-		cout<< myNet.getRecentAverageError() 
+		cout<< "Net recent average error: "
 				<< myNet.getRecentAverageError() << endl;
 	}
 	cout<< endl << "Done" << endl;
